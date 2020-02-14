@@ -15,10 +15,10 @@ _describe bar
     _test "Should not print baz"
         _assert _not _output_equals baz
 
-_describe echo-first
+_describe echo_first
     # If you want to pass arguments to the test function,
     # the function name has to be explicitly specified
-    _test "Should get the correct number of args" echo-first "first arg" "second\\ arg"
+    _test "Should get the correct number of args" echo_first "first arg" "second\\ arg"
         _assert _nth_arg_equals 0 "first arg" "First argument equals 0"
         _assert _nth_arg_equals 1 "second\\ arg"
 

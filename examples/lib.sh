@@ -6,7 +6,8 @@ foo() {
 
 # Prints bar
 bar() {
-    echo "bar"
+    # Oops, I broke this!
+    echo "baz"
 }
 
 # critic ignore
@@ -21,10 +22,10 @@ foobar() {
     bar
 }
 
-echo-first() {
+echo_first() {
     echo "$1"
 }
 
-echo-second() {
+echo_second() {
     echo "$2"
 }

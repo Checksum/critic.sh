@@ -33,6 +33,7 @@ fi
 # Options
 CRITIC_COVERAGE_DISABLE="${CRITIC_COVERAGE_DISABLE:-}"
 CRITIC_COVERAGE_MIN_PERCENT="${CRITIC_COVERAGE_MIN_PERCENT:-0}"
+CRITIC_TRACE_FILE=".critic-trace-$(date +%s).log"
 
 # Colors
 DEFAULT='\033[0m'
@@ -105,7 +106,6 @@ _assert() {
     # shellcheck disable=2155
     local msg="$(_generate_assertion_msg "$fn_or_expr" "$@")"
     : "${msg:?'Assertion message expected as last parameter'}"
-    local _assert_args=()
 
     # If expression, unset all positional parameters
     if ! declare -f "$fn_or_expr" > /dev/null 2>&1; then
@@ -172,12 +172,14 @@ _fail() {
 }
 
 _log_output() {
-    cat <<OUTPUT | sed 's/^/    /'
---------
-Exit Code: ${2:-$_return}
-Output: ${3:-$_output}
-$([ ${#_args[@]} -gt 0 ] && echo -n "Arguments (${#_args[@]}): $(IFS=,; printf '%s' "${_args[*]}")")
---------
+    cat <<OUTPUT
+
+      --------
+      Exit Code: ${2:-$_return}
+      Output: ${3:-$_output}
+      Arguments(${#_args[@]}): $(for a in "${_args[@]}"; do echo -n "$a, "; done)
+      --------
+
 OUTPUT
 }
 
@@ -235,7 +237,7 @@ _collect_coverage() {
     # Read all trace entries excluding this file (critic.sh)
     # and the test file which sources this file (test-foo.sh)
     while IFS='' read -r line; do trace_lines+=( "$line" ); done < \
-        <(awk "!/${TEST_FILE}/ && !/${THIS_FILE}/" "/tmp/critic-trace-${TEST_FILE}")
+        <(awk "!/${TEST_FILE}/ && !/${THIS_FILE}/" "${CRITIC_TRACE_FILE}")
 
     for line in "${trace_lines[@]}"; do
         if ! [[ "$line" == $'('* ]]; then
@@ -323,6 +325,16 @@ _collect_coverage() {
         echo -e "  Coverage %: ${num_coverage_percent}${DEFAULT}"
         echo -e "  Uncovered Lines: ${uncovered_lines[*]:-none}"
         echo -e "${DEFAULT}"
+
+        # Debug info
+        if [ -n "${DEBUG:-}" ]; then
+            echo -e "\n  Debug info\n"
+            echo "    # lines in file: ${#total_lines[@]}"
+            echo "    # lines of code: ${num_total_loc}"
+            echo "    Empty lines: ${empty_lines[*]}"
+            echo "    Ignored lines: ${ignored_lines[*]}"
+            echo "    Covered lines: ${covered_lines[*]}"
+        fi
     done
 }
 
@@ -344,6 +356,8 @@ _finish_tests() {
     # Print summary
     echo -e "\n${MAGENTA}[critic] Tests completed.${DEFAULT}" \
         "${GREEN}Passed: ${PASS_COUNT}${DEFAULT}, ${RED}Failed: ${FAIL_COUNT}${DEFAULT}"
+    # Remove trace file
+    [ -z "${DEBUG:-}" ] && rm -rf "${CRITIC_TRACE_FILE}"
     # Teardown
     declare -f _teardown > /dev/null && { _teardown || true; }
     # Exit with number of failed tests
@@ -352,10 +366,11 @@ _finish_tests() {
 trap _finish_tests EXIT
 
 # Setup if coverage is enabled
-if [ -n "${CRITIC_COVERAGE_DISABLE}" ]; then
+if [ -z "${CRITIC_COVERAGE_DISABLE}" ]; then
+    echo "here"
     # Redirect all trace info to a temp file rather
     # than printing to stdout. This requires bash 4.1
-    exec 13> "/tmp/critic-trace-${TEST_FILE}"
+    exec 13> "${CRITIC_TRACE_FILE}"
     export BASH_XTRACEFD="13"
     # Ensure the trace is written in this format
     export PS4='(${BASH_SOURCE}:${LINENO}):${FUNCNAME[0]:+${FUNCNAME[0]}():}'
