@@ -2,6 +2,8 @@
 
 Dead simple testing framework for Bash with rudimentary coverage.
 
+[![asciicast](https://asciinema.org/a/301445.svg)](https://asciinema.org/a/301445)
+
 ## Requirements
 
 Bash v4.1+
