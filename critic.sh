@@ -367,7 +367,6 @@ trap _finish_tests EXIT
 
 # Setup if coverage is enabled
 if [ -z "${CRITIC_COVERAGE_DISABLE}" ]; then
-    echo "here"
     # Redirect all trace info to a temp file rather
     # than printing to stdout. This requires bash 4.1
     exec 13> "${CRITIC_TRACE_FILE}"
