@@ -1,0 +1,10 @@
+name: CI
+on: [push]
+
+jobs:
+  test:
+    name: shellcheck
+    runs-on: [ubuntu-latest]
+    steps:
+    - name: shellcheck
+      uses: ludeeus/action-shellcheck@0.1.0
