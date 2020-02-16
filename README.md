@@ -1,12 +1,20 @@
 # critic.sh
 
-Dead simple testing framework for Bash with rudimentary coverage.
+Dead simple testing framework for Bash with coverage.
 
 [![asciicast](https://asciinema.org/a/301445.svg)](https://asciinema.org/a/301445)
 
+## Why?
+
+I was looking for a Bash testing framework with a familiar API and with coverage reporting. Although there are excellent frameworks like [bats-core](https://github.com/bats-core/bats-core), [shunit2](https://github.com/kward/shunit2) and [bashunit](https://github.com/djui/bashunit), I wasn't too comfortable with their API (not their fault). Also, I wanted some indication of coverage, so that it can be improved over time.
+
+`critic.sh` exposes high level functions for testing consistent with other frameworks and a set of built in assertions. One of my most important goals was to be able to pass in any shell expression to the `_test` and `_assert` methods, so that one is not limited to the built-ins.
+
+The coverage reporting is currently rudimentary, but it does indicate which lines haven't been covered. It works by running the tests with extended debugging, redirecting the trace output to a log file, and then parsing it to determine which functions/lines have been executed. It can definitely be improved!
+
 ## Requirements
 
-Bash v4.1+
+Due to use of certain bashisms, Bash v4.1+ is required. This may change in the future.
 
 ## Usage
 
@@ -39,16 +47,19 @@ critic.sh test-foobar.sh
 
 ## API
 
+The layout of a test is consistent with other frameworks. You `_describe` a test suite, `_test` a function or expression, and `_assert` the output with a function or expression. The output, return code and arguments passed to the test are available as variables for all custom assertions.
+
 ### Test suite
 
-| Function   | Description          | Arguments                                         |
-| ---------- | -------------------- | ------------------------------------------------- |
-| \_describe | Declare a test suite | 1. Suite/Function name (\*)                       |
-| \_test     | Run a test           | 1. Test name (\*)                                 |
-|            |                      | 2. Test function/expression                       |
-|            |                      | 3. Arguments to forward to the test function      |
-| \_assert   | Run an assertion     | 1. Assertion function/expression (\*)             |
-|            |                      | 2. Arguments to forward to the assertion function |
+| Function   | Description                                        | Arguments                                         |
+| ---------- | -------------------------------------------------- | ------------------------------------------------- |
+| \_describe | Declare a test suite                               | 1. Suite/Function name (\*)                       |
+| \_test     | Run a test                                         | 1. Test name (\*)                                 |
+|            |                                                    | 2. Test function/expression                       |
+|            |                                                    | 3. Arguments to forward to the test function      |
+| \_assert   | Run an assertion                                   | 1. Assertion function/expression (\*)             |
+|            |                                                    | 2. Arguments to forward to the assertion function |
+| \_teardown | Teardown function run after all tests have ben run |
 
 ### Assertions
 
