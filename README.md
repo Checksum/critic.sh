@@ -33,7 +33,7 @@ source critic.sh
 # Write tests
 _describe foo
   _test "output should equal foo"
-    _assert _equals "foo"
+    _assert _output_equals "foo"
 
   _test "return code should be 0"
     _assert _return_true "Optional assertion message"
@@ -69,9 +69,9 @@ The layout of a test is consistent with other frameworks. You `_describe` a test
 | \_return_false   | Return code != 0      | 1. Optional message     |
 | \_return_equals  | Return code == num    | 1. Return code (\*)     |
 |                  |                       | 2. Optional message     |
-| \_contains       | Output contains value | 1. Value (\*)           |
+| \_output_contains| Output contains value | 1. Value (\*)           |
 |                  |                       | 2. Optional message     |
-| \_equals         | Output equals value   | 1. Value (\*)           |
+| \_output_equals  | Output equals value   | 1. Value (\*)           |
 |                  |                       | 2. Optional message     |
 | \_not            | Negate an assertion   | 1. Assertion (\*)       |
 |                  |                       | 2. Value (\*)           |
