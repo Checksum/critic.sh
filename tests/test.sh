@@ -5,12 +5,16 @@ code=$?
 
 function cleanupOutput() {
     while read -r line; do
-        sed "s,$(printf '\033')\\[[0-9;]*[a-zA-Z],,g" <<< "$line" | awk '{$1=$1;print}'
+        sed "s,$(printf '\033')\\[[0-9;]*[a-zA-Z],,g" <<< "$line" | awk '{$1=$1;print}' | awk /./
     done
 }
 
+_abspath() {
+    echo "$(cd "$(dirname "$1")"; pwd)"
+}
+
 expected="$(cat <<EOF
-/Users/srinath/Projects/github.com/Checksum/critic.sh/examples/lib.sh
+$(_abspath "$1")/examples/lib.sh
 Total LOC: 19
 Covered LOC: 3
 Coverage %: 50
