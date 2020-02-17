@@ -1,5 +1,9 @@
 # critic.sh
 
+![CI](https://github.com/Checksum/critic.sh/workflows/CI/badge.svg?branch=master)
+
+---
+
 Dead simple testing framework for Bash with coverage.
 
 [![asciicast](https://asciinema.org/a/301445.svg)](https://asciinema.org/a/301445)
@@ -63,22 +67,22 @@ The layout of a test is consistent with other frameworks. You `_describe` a test
 
 ### Assertions
 
-| Function         | Description           | Arguments               |
-| ---------------- | --------------------- | ----------------------- |
-| \_return_true    | Return code == 0      | 1. Optional message     |
-| \_return_false   | Return code != 0      | 1. Optional message     |
-| \_return_equals  | Return code == num    | 1. Return code (\*)     |
-|                  |                       | 2. Optional message     |
-| \_output_contains| Output contains value | 1. Value (\*)           |
-|                  |                       | 2. Optional message     |
-| \_output_equals  | Output equals value   | 1. Value (\*)           |
-|                  |                       | 2. Optional message     |
-| \_not            | Negate an assertion   | 1. Assertion (\*)       |
-|                  |                       | 2. Value (\*)           |
-|                  |                       | 3. Optional message     |
-| \_nth_arg_equals | Nth arg equals value  | 1. Argument index (>=0) |
-|                  |                       | 2. Value                |
-|                  |                       | 3. Optional message     |
+| Function          | Description           | Arguments               |
+| ----------------- | --------------------- | ----------------------- |
+| \_return_true     | Return code == 0      | 1. Optional message     |
+| \_return_false    | Return code != 0      | 1. Optional message     |
+| \_return_equals   | Return code == num    | 1. Return code (\*)     |
+|                   |                       | 2. Optional message     |
+| \_output_contains | Output contains value | 1. Value (\*)           |
+|                   |                       | 2. Optional message     |
+| \_output_equals   | Output equals value   | 1. Value (\*)           |
+|                   |                       | 2. Optional message     |
+| \_not             | Negate an assertion   | 1. Assertion (\*)       |
+|                   |                       | 2. Value (\*)           |
+|                   |                       | 3. Optional message     |
+| \_nth_arg_equals  | Nth arg equals value  | 1. Argument index (>=0) |
+|                   |                       | 2. Value                |
+|                   |                       | 3. Optional message     |
 
 ### Variables
 

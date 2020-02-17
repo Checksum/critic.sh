@@ -6,5 +6,7 @@ jobs:
     name: shellcheck
     runs-on: [ubuntu-latest]
     steps:
-    - name: shellcheck
-      uses: ludeeus/action-shellcheck@0.1.0
+      - name: shellcheck
+        uses: ludeeus/action-shellcheck@0.1.0
+      - name: tests
+        run: bash tests/test.sh

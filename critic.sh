@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# critic.sh - Dead simple testing framework for Bash with rudimentary coverage.
+# critic.sh - Dead simple testing framework for Bash with coverage.
 # https://github.com/Checksum/critic.sh
 
 # MIT License
@@ -74,7 +74,7 @@ _test() {
 
     # If fn is not passed and _test_suite is a valid function, default to that
     if [ -z "$fn_or_expr" ]; then
-        if declare -f "$_test_suite" > /dev/null; then
+        if declare -f "$_test_suite" &> /dev/null; then
             fn_or_expr="$_test_suite"
         else
             : "${function_undefined:?'Test Function or expression expected as parameter 2'}"
@@ -83,7 +83,7 @@ _test() {
     echo -e "  ${BLUE}${name}${DEFAULT}"
 
     # If expression, unset all positional parameters
-    if ! declare -f "$fn_or_expr" > /dev/null 2>&1; then
+    if ! declare -f "$fn_or_expr" &> /dev/null; then
         set --
     fi
     # Quote arguments to pass to eval, but save the unmodified
@@ -108,7 +108,7 @@ _assert() {
     : "${msg:?'Assertion message expected as last parameter'}"
 
     # If expression, unset all positional parameters
-    if ! declare -f "$fn_or_expr" > /dev/null 2>&1; then
+    if ! declare -f "$fn_or_expr" &> /dev/null; then
         set --
     fi
     # Quote arguments to pass to eval
@@ -212,6 +212,7 @@ _collect_coverage() {
     local trace_lines parts filename lineno args
     declare -A coverage_map source_functions covered_functions
     declare -a covered_lines all_functions source_files
+    declare -A -g _report
 
     # Get extra debug info so that we can determine which file
     # a function belongs to (declare -F foobar)
@@ -267,7 +268,7 @@ _collect_coverage() {
     echo -e "\n${MAGENTA}[critic] Coverage Report${DEFAULT}"
     for file in "${source_files[@]}"; do
         # Lines in the file as an array
-        total_lines=($(eval echo {1..$(wc -l < "$file" | tr -d  ' ')}))
+        total_lines=($(eval echo "{1..$(wc -l < "$file" | tr -d  ' ')}"))
         # Total #loc excluding empty lines, comments
         num_total_loc="$(sed '/^ *#/d;/^ *$/d' "${file}" | wc -l | tr -d ' ')"
         # Lines in the file which are empty or comments
@@ -292,9 +293,9 @@ _collect_coverage() {
             # If thee startline is already covered, add the entire heredoc definition
             for c in "${covered_lines[@]}"; do
                 if [ "$c" -eq "$startline" ]; then
-                    for lineno in $(awk "NR==$((startline+1)),/^${marker}$/{print NR}" "$file"); do
+                    while read -r lineno; do
                         covered_lines+=( "$lineno" );
-                    done
+                    done < <(awk "NR==$((startline+1)),/^${marker}$/{print NR}" "$file")
                     break
                 fi
             done
@@ -308,6 +309,7 @@ _collect_coverage() {
         uncovered_lines=($(_uniq_array "${uncovered_lines[@]}" "${covered_lines[@]}"))
         if [ ${#lines_to_cover[@]} -gt 0 ]; then
             num_coverage_percent="$((${#covered_lines[@]} * 100 / "${#lines_to_cover[@]}"))"
+            num_coverage_percent="$(("$num_coverage_percent" > 100 ? 100 : "$num_coverage_percent"))"
         else
             num_coverage_percent=100
         fi
@@ -316,14 +318,14 @@ _collect_coverage() {
         echo -e "\n${CYAN}$file${DEFAULT}"
         echo -e "  ${MAGENTA}Total LOC: ${num_total_loc}${DEFAULT} "
         echo -e "  ${GREEN}Covered LOC: ${#covered_lines[@]}${DEFAULT} "
-        echo -e "  ${YELLOW}Ignored LOC: ${#ignored_lines[@]}${DEFAULT} "
         if [ "${num_coverage_percent}" -lt "${CRITIC_COVERAGE_MIN_PERCENT}" ]; then
             echo -en "${RED}"
         else
             echo -en "${GREEN}"
         fi
         echo -e "  Coverage %: ${num_coverage_percent}${DEFAULT}"
-        echo -e "  Uncovered Lines: ${uncovered_lines[*]:-none}"
+        echo -e "  ${YELLOW}Ignored LOC: ${#ignored_lines[@]}${DEFAULT} "
+        echo -e "  ${RED}Uncovered Lines: ${uncovered_lines[*]:-none}"
         echo -e "${DEFAULT}"
 
         # Debug info
@@ -344,13 +346,18 @@ critic.sh - Dead simple testing framework for bash
 
 Usage:
   critic.sh /path/to/test.sh
+
+https://github.com/Checksum/critic.sh
 EOF
     _print_report=false
 }
 
 _finish_tests() {
-    exit_code=$?
-    [ "${_print_report:-}" = false ] && return 0 || true
+    local exit_code=$?
+    if [ "${_print_report:-}" = false ]; then
+        return 0
+    fi
+
     # Print coverage
     [ -z "${CRITIC_COVERAGE_DISABLE}" ] && { _collect_coverage || true; }
     # Print summary
@@ -359,7 +366,7 @@ _finish_tests() {
     # Remove trace file
     [ -z "${DEBUG:-}" ] && rm -rf "${CRITIC_TRACE_FILE}"
     # Teardown
-    declare -f _teardown > /dev/null && { _teardown || true; }
+    declare -f _teardown &> /dev/null && { _teardown || true; }
     # Exit with number of failed tests
     [ $exit_code -eq 0 ] && exit ${FAIL_COUNT} || exit $exit_code
 }
@@ -386,5 +393,6 @@ if [ $sourced -eq 0 ]; then
     fi
 
     _run "${TEST_FILE}"
+    # shellcheck disable=1090
     source "$1"
 fi
