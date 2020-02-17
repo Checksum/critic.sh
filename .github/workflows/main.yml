@@ -7,9 +7,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: shellcheck
+      - name: Clone Repo
+        uses: actions/checkout@v2
+
+      - name: Run Shellcheck
         uses: ludeeus/action-shellcheck@0.1.0
 
-      - name: tests
+      - name: Run Unit Tests
         run: tests/test.sh
         shell: bash
