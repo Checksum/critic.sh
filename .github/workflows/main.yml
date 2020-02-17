@@ -7,6 +7,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Environment
+        run: |
+          echo "${BASH_VERSION}"
+          lsb_release -a
+        
       - name: Clone Repo
         uses: actions/checkout@v2
 
