@@ -25,7 +25,7 @@ set -euo pipefail
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-if [[ "${BASH_VERSION:0:1}" -lt 4 || ("${BASH_VERSION:0:1}" -eq 4 && "${BASH_VERSION:1:2}" -lt 1) ]]; then
+if [[ "${BASH_VERSION:0:1}" -lt 4 || ("${BASH_VERSION:0:1}" -eq 4 && "${BASH_VERSION:2:1}" -lt 1) ]]; then
     echo "critic.sh needs bash version >= 4.1"
     exit 99
 fi
