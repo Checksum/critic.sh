@@ -238,18 +238,18 @@ _collect_coverage() {
     # Read all trace entries excluding this file (critic.sh)
     # and the test file which sources this file (test-foo.sh)
     while IFS='' read -r line; do trace_lines+=( "$line" ); done < \
-        <(awk "!/${TEST_FILE}/ && !/${THIS_FILE}/" "${CRITIC_TRACE_FILE}")
+        <(awk "!/^\++\(.*${TEST_FILE}|${THIS_FILE}/" "${CRITIC_TRACE_FILE}")
 
     for line in "${trace_lines[@]}"; do
-        if ! [[ "$line" == $'('* ]]; then
+        if [ "${line:0:1}" != '+' ]; then
             continue
         fi
-        line="$(echo "$line" | tr -d '+()')"
-        IFS=: read -r -a parts <<< "$line"
-        filename="$(_abspath "${parts[0]}")"
-        lineno="${parts[1]/ }"
-        expression="${parts[2]/ }"
-        args="${parts[3]:-}"
+        parts=($(echo "${line//':|:'/$'\n'}"))
+        entry="$(echo "${parts[0]}" | tr -d '+()')"
+        IFS=: read -r filename lineno <<< "$entry"
+        filename="$(_abspath "$filename")"
+        expression="${parts[1]% }"
+        args="${parts[2]:-}"
 
         # If function, add to covered_functions map with [function name]="args"
         if [ -n "${source_functions[$expression]+unset}" ]; then
@@ -379,7 +379,7 @@ if [ -z "${CRITIC_COVERAGE_DISABLE}" ]; then
     exec 13> "${CRITIC_TRACE_FILE}"
     export BASH_XTRACEFD="13"
     # Ensure the trace is written in this format
-    export PS4='(${BASH_SOURCE}:${LINENO}):${FUNCNAME[0]:+${FUNCNAME[0]}():}'
+    export PS4="+(\${BASH_SOURCE}:\${LINENO}):|:\${FUNCNAME[0]:+\${FUNCNAME[0]}():|:}"
     # Turn on some extended tracing
     set -xo functrace
 fi
