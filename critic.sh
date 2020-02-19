@@ -245,7 +245,8 @@ _collect_coverage() {
             continue
         fi
         parts=($(echo "${line//':|:'/$'\n'}"))
-        entry="$(echo "${parts[0]}" | tr -d '+()')"
+        entry="${parts[0]##+*(}"
+        entry="${entry%\)}"
         IFS=: read -r filename lineno <<< "$entry"
         filename="$(_abspath "$filename")"
         expression="${parts[1]% }"
