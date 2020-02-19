@@ -11,7 +11,7 @@ jobs:
         run: |
           echo "${BASH_VERSION}"
           lsb_release -a
-        
+
       - name: Clone Repo
         uses: actions/checkout@v2
 
@@ -19,5 +19,5 @@ jobs:
         uses: ludeeus/action-shellcheck@0.1.0
 
       - name: Run Unit Tests
-        run: tests/test.sh
+        run: scripts/test.sh
         shell: bash
