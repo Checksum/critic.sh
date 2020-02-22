@@ -20,6 +20,27 @@ The coverage reporting is currently rudimentary, but it does indicate which line
 
 Due to use of certain bashisms, Bash v4.1+ is required. This may change in the future.
 
+A tiny docker image is provided for convenience.
+
+## Installation
+
+There are a few ways to use `critic.sh`:
+
+* Use the docker image
+
+```bash
+docker run --rm -v $(pwd):/work checksum/critic.sh '/work/src/*.sh' '/work/lib/*.sh'
+```
+
+* Add this repository as a git submodule in your project
+
+```bash
+git submodule add https://github.com/Checksum/critic.sh critic
+critic/critic.sh test.sh
+```
+
+* Copy `critic.sh` file into your project (not recommended)
+
 ## Usage
 
 See `examples/test.sh` for detailed usage. To run the tests: `bash examples/test.sh`
