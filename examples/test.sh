@@ -27,3 +27,17 @@ _describe echo_first
     _test "Should test custom expression" true
         _assert "[ 1 -eq 1 ]"
         _assert "[ 2 -eq 2 ]" "Two should be equal to two"
+
+
+# This is just a regular script, so setup tests as you like!
+readme="$(cat <<EOF
+critic.sh test file
+
+Usage: test.sh foo|bar
+EOF
+)"
+
+_describe "readme"
+    _test "Should print readme" "echo \$readme"
+        _assert _output_contains "foo|bar" "Readme contains options"
+        _assert _output_contains "critic.sh"

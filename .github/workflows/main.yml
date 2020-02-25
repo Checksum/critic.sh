@@ -7,11 +7,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Environment
-        run: |
-          echo "${BASH_VERSION}"
-          lsb_release -a
-
       - name: Clone Repo
         uses: actions/checkout@v2
 
@@ -21,3 +16,10 @@ jobs:
       - name: Run Unit Tests
         run: scripts/test.sh
         shell: bash
+
+      - name: Publish Docker image
+        uses: elgohr/Publish-Docker-Github-Action@2.12
+        with:
+          name: checksum/critic.sh
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}

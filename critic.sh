@@ -140,7 +140,7 @@ _return_equals() {
 }
 
 _output_contains() {
-    grep -Fqi "$*" <<< "$_output"
+    grep -Fqi "$1" <<< "$_output"
 }
 
 _not() {
