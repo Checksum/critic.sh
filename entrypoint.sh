@@ -17,6 +17,7 @@ skipFile() {
 }
 
 testFiles=()
+# shellcheck disable=2068
 for file in $@; do
   if ! skipFile "$file"; then
     testFiles+=("$file")

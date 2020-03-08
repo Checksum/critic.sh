@@ -14,7 +14,7 @@ I was looking for a Bash testing framework with a familiar API and with coverage
 
 `critic.sh` exposes high level functions for testing consistent with other frameworks and a set of built in assertions. One of my most important goals was to be able to pass in any shell expression to the `_test` and `_assert` methods, so that one is not limited to the built-ins.
 
-The coverage reporting is currently rudimentary, but it does indicate which lines haven't been covered. It works by running the tests with extended debugging, redirecting the trace output to a log file, and then parsing it to determine which functions/lines have been executed. It can definitely be improved!
+In addition, it can generate a lcov report. It tracks line and function coverage, but not branches. It works by running the tests with extended debugging, redirecting the trace output to a log file, and then parsing it to determine which functions/lines have been executed. It is currently a work in progress.
 
 ## Requirements
 
@@ -123,11 +123,14 @@ After every `_test` is run, the following variables are set. These are useful fo
 
 ### Options
 
-| Environment variable        | Description                              |
-| --------------------------- | ---------------------------------------- |
-| CRITIC_COVERAGE_DISABLE     | Disable coverage                         |
-| CRITIC_COVERAGE_MIN_PERCENT | Minimum coverage percent per source file |
-| DEBUG                       | Prints more verbose messages             |
+| Environment variable        | Description                                 | Default |
+| --------------------------- | ------------------------------------------- | ------- |
+| CRITIC_COVERAGE_DISABLE     | Disable coverage                            | false   |
+| CRITIC_COVERAGE_MIN_PERCENT | Minimum coverage percent per source file    | 0       |
+| CRITIC_COVERAGE_REPORT_CLI  | Print coverage report to CLI                | true    |
+| CRITIC_COVERAGE_REPORT_LCOV | Save lcov report                            | true    |
+| CRITIC_COVERAGE_REPORT_HTML | Generate HTML lcov report (requires `lcov`) | false   |
+| CRITIC_DEBUG                | Prints more verbose messages                | false   |
 
 ### Annotations
 

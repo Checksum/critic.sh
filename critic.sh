@@ -36,7 +36,7 @@ CRITIC_COVERAGE_MIN_PERCENT="${CRITIC_COVERAGE_MIN_PERCENT:-0}"
 CRITIC_TRACE_FILE=".critic-trace-$(date +%s).log"
 CRITIC_COVERAGE_REPORT_CLI="${CRITIC_COVERAGE_REPORT_CLI:-true}"
 CRITIC_COVERAGE_REPORT_LCOV="${CRITIC_COVERAGE_REPORT_LCOV:-true}"
-CRITIC_COVERAGE_REPORT_HTML="${CRITIC_COVERAGE_REPORT_HTML:-true}"
+CRITIC_COVERAGE_REPORT_HTML="${CRITIC_COVERAGE_REPORT_HTML:-false}"
 
 
 # Colors
@@ -166,7 +166,7 @@ _nth_arg_equals() {
 _pass() {
     ((PASS_COUNT+=1))
     echo -e "    ${GREEN}PASS ✔ ${DEFAULT}: $1"
-    [ -z "${DEBUG:-}" ] || _log_output "$@"
+    [ -z "${CRITIC_DEBUG:-}" ] || _log_output "$@"
 }
 
 _fail() {
@@ -378,7 +378,7 @@ _cli_report() {
     echo -e "${DEFAULT}"
 
     # Debug info
-    if [ -n "${DEBUG:-}" ]; then
+    if [ -n "${CRITIC_DEBUG:-}" ]; then
         echo -e "\n  Debug info\n"
         echo "    # lines in file: ${#total_lines[@]}"
         echo "    # lines of code: ${num_total_loc}"
@@ -431,7 +431,7 @@ _finish_tests() {
     echo -e "\n${MAGENTA}[critic] Tests completed.${DEFAULT}" \
         "${GREEN}Passed: ${PASS_COUNT}${DEFAULT}, ${RED}Failed: ${FAIL_COUNT}${DEFAULT}"
     # Remove trace file
-    [ -z "${DEBUG:-}" ] && rm -rf "${CRITIC_TRACE_FILE}"
+    [ -z "${CRITIC_DEBUG:-}" ] && rm -rf "${CRITIC_TRACE_FILE}"
     # Teardown
     declare -f _teardown &> /dev/null && { _teardown || true; }
     # Exit with number of failed tests
