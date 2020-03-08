@@ -22,6 +22,7 @@ _describe echo_first
         _assert _nth_arg_equals 0 "first arg" "First argument equals 0"
         _assert _nth_arg_equals 1 "second\\ arg"
 
+_describe "custom expression"
     # The true expression means don't do anything
     # You can pass any bash expression there!
     _test "Should test custom expression" true

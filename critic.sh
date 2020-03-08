@@ -34,6 +34,10 @@ fi
 CRITIC_COVERAGE_DISABLE="${CRITIC_COVERAGE_DISABLE:-}"
 CRITIC_COVERAGE_MIN_PERCENT="${CRITIC_COVERAGE_MIN_PERCENT:-0}"
 CRITIC_TRACE_FILE=".critic-trace-$(date +%s).log"
+CRITIC_COVERAGE_REPORT_CLI=true
+CRITIC_COVERAGE_REPORT_LCOV=true
+CRITIC_COVERAGE_REPORT_HTML=true
+
 
 # Colors
 DEFAULT='\033[0m'
@@ -196,7 +200,6 @@ _generate_assertion_msg() {
     esac
 }
 
-# Run tests
 _abspath() {
     echo "$(cd "$(dirname "$1")"; pwd)/$(basename "$1")"
 }
@@ -205,14 +208,17 @@ _uniq_array() {
     printf '%s\n' "$@" | tr ' ' '\n' | sort | uniq -u | sort -V | tr '\n' ' '
 }
 
+join_by() {
+    local d=$1; shift; echo -n "$1"; shift; printf "%s" "${@/#/$d}";
+}
+
 _collect_coverage() {
     # disable extra debug info
     set +xo functrace
 
     local trace_lines parts filename lineno args
-    declare -A coverage_map source_functions covered_functions
-    declare -a covered_lines all_functions source_files
-    declare -A -g _report
+    declare -A -g coverage_map source_functions covered_functions covered_lines_count
+    declare -a -g covered_lines all_functions source_files
 
     # Get extra debug info so that we can determine which file
     # a function belongs to (declare -F foobar)
@@ -250,12 +256,16 @@ _collect_coverage() {
         IFS=: read -r filename lineno <<< "$entry"
         filename="$(_abspath "$filename")"
         expression="${parts[1]% }"
+        expression="${expression%()}"
         args="${parts[2]:-}"
 
         # If function, add to covered_functions map with [function name]="args"
         if [ -n "${source_functions[$expression]+unset}" ]; then
-            covered_functions["$expression"]="$args"
+            covered_functions[$expression]="$(( ${covered_functions[$expression]:-0} + 1 ))"
         fi
+
+        # Number of times a line is covered (for lcov)
+        covered_lines_count["$lineno"]="$(( ${covered_lines_count[$lineno]:-0} + 1 ))"
 
         # Add to lines covered, this can be functions or expressions
         # Don't worry about duplicates yet
@@ -315,30 +325,87 @@ _collect_coverage() {
             num_coverage_percent=100
         fi
 
-        # Print report
-        echo -e "\n${CYAN}$file${DEFAULT}"
-        echo -e "  ${MAGENTA}Total LOC: ${num_total_loc}${DEFAULT} "
-        echo -e "  ${GREEN}Covered LOC: ${#covered_lines[@]}${DEFAULT} "
-        if [ "${num_coverage_percent}" -lt "${CRITIC_COVERAGE_MIN_PERCENT}" ]; then
-            echo -en "${RED}"
-        else
-            echo -en "${GREEN}"
-        fi
-        echo -e "  Coverage %: ${num_coverage_percent}${DEFAULT}"
-        echo -e "  ${YELLOW}Ignored LOC: ${#ignored_lines[@]}${DEFAULT} "
-        echo -e "  ${RED}Uncovered Lines: ${uncovered_lines[*]:-none}"
-        echo -e "${DEFAULT}"
-
-        # Debug info
-        if [ -n "${DEBUG:-}" ]; then
-            echo -e "\n  Debug info\n"
-            echo "    # lines in file: ${#total_lines[@]}"
-            echo "    # lines of code: ${num_total_loc}"
-            echo "    Empty lines: ${empty_lines[*]}"
-            echo "    Ignored lines: ${ignored_lines[*]}"
-            echo "    Covered lines: ${covered_lines[*]}"
-        fi
+        CRITIC_REPORT_CLI+="$(_cli_report)"
+        CRITIC_REPORT_LCOV+="$(_lcov_report)"
     done
+}
+
+# http://ltp.sourceforge.net/coverage/lcov/geninfo.1.php
+_lcov_report() {
+    cat <<REPORT
+TN:
+SF:$file
+$(for k in "${!source_functions[@]}"; do
+    local path lineno
+    IFS=: read -r path lineno <<< "${source_functions[$k]}"
+    if [ "$path" = "$file" ]; then
+        echo "FN:$lineno,$k"
+    fi
+done)
+$(for k in "${!source_functions[@]}"; do
+    if [ -n "${covered_functions[$k]+unset}" ]; then
+        echo "FNDA:${covered_functions[$k]},$k"
+    fi
+done)
+$(for l in "${!covered_lines_count[@]}"; do
+    echo "DA:$l,${covered_lines_count[$l]}"
+done)
+$(for l in "${empty_lines[@]}"; do
+    echo "DA:$l,1"
+done)
+$(for l in "${ignored_lines[@]}"; do
+    echo "DA:$l,1"
+done)
+LF:$((${#lines_to_cover[@]} + ${#empty_lines[@]} + ${#ignored_lines[@]}))
+LH:${#covered_lines[@]}
+end_of_record
+REPORT
+}
+
+_cli_report() {
+    # Print report
+    echo -e "\n${CYAN}$file${DEFAULT}"
+    echo -e "  ${MAGENTA}Total LOC: ${num_total_loc}${DEFAULT} "
+    echo -e "  ${GREEN}Covered LOC: ${#covered_lines[@]}${DEFAULT} "
+    if [ "${num_coverage_percent}" -lt "${CRITIC_COVERAGE_MIN_PERCENT}" ]; then
+        echo -en "${RED}"
+    else
+        echo -en "${GREEN}"
+    fi
+    echo -e "  Coverage %: ${num_coverage_percent}${DEFAULT}"
+    echo -e "  ${YELLOW}Ignored LOC: ${#ignored_lines[@]}${DEFAULT} "
+    echo -e "  ${RED}Uncovered Lines: ${uncovered_lines[*]:-none}"
+    echo -e "${DEFAULT}"
+
+    # Debug info
+    if [ -n "${DEBUG:-}" ]; then
+        echo -e "\n  Debug info\n"
+        echo "    # lines in file: ${#total_lines[@]}"
+        echo "    # lines of code: ${num_total_loc}"
+        echo "    Empty lines: ${empty_lines[*]}"
+        echo "    Ignored lines: ${ignored_lines[*]}"
+        echo "    Covered lines: ${covered_lines[*]}"
+    fi
+}
+
+_coverage_report() {
+    _collect_coverage
+
+    if [ "$CRITIC_COVERAGE_REPORT_CLI" = true ]; then
+        echo -e "$CRITIC_REPORT_CLI"
+    fi
+    if [[ "$CRITIC_COVERAGE_REPORT_LCOV" = true ]]; then
+        rm -rf coverage && mkdir -p coverage
+        echo "$CRITIC_REPORT_LCOV" > "coverage/lcov.info"
+        if [[ "$CRITIC_COVERAGE_REPORT_HTML" = true ]]; then
+            if command -v genhtml &> /dev/null; then
+                genhtml coverage/lcov.info -o coverage/report &> /dev/null
+            else
+                echo -e "${YELLOW}genhtml not found in path, have you install lcov - "
+                    "http://ltp.sourceforge.net/coverage/lcov.php${DEFAULT}"
+            fi
+        fi
+    fi
 }
 
 _print_usage() {
@@ -350,7 +417,6 @@ Usage:
 
 https://github.com/Checksum/critic.sh
 EOF
-    _print_report=false
 }
 
 _finish_tests() {
@@ -359,8 +425,8 @@ _finish_tests() {
         return 0
     fi
 
-    # Print coverage
-    [ -z "${CRITIC_COVERAGE_DISABLE}" ] && { _collect_coverage || true; }
+    # Generate and print coverage report
+    [ -z "${CRITIC_COVERAGE_DISABLE}" ] && { _coverage_report || true; }
     # Print summary
     echo -e "\n${MAGENTA}[critic] Tests completed.${DEFAULT}" \
         "${GREEN}Passed: ${PASS_COUNT}${DEFAULT}, ${RED}Failed: ${FAIL_COUNT}${DEFAULT}"
@@ -390,6 +456,7 @@ fi
 if [ $sourced -eq 0 ]; then
     if [ $# -eq 0 ]; then
         _print_usage
+        _print_report=false
         exit 0
     fi
 
