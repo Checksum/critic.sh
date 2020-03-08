@@ -34,6 +34,7 @@ _runTest() {
 }
 
 exitCode=0
+export CRITIC_COVERAGE_REPORT_HTML=false
 
 echo "--- Coverage report"
 _runTest "examples/test.sh" 1
