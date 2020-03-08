@@ -26,20 +26,26 @@ A tiny docker image is provided for convenience.
 
 There are a few ways to use `critic.sh`:
 
-* Use the docker image
+- Use the docker image
 
 ```bash
 docker run --rm -v $(pwd):/work checksum/critic.sh '/work/src/*.sh' '/work/lib/*.sh'
 ```
 
-* Add this repository as a git submodule in your project
+You can pass a `CRITIC_SETUP` environment variable to run setup scripts before the tests are run. The docker image is based on alpine linux, so use `apk` to install packages:
+
+```bash
+docker run --rm -e CRITIC_SETUP='apk add --no-cache jq' -v $(pwd):/work checksum/critic.sh '/work/src/*.sh' '/work/lib/*.sh'
+```
+
+- Add this repository as a git submodule in your project
 
 ```bash
 git submodule add https://github.com/Checksum/critic.sh critic
 critic/critic.sh test.sh
 ```
 
-* Copy `critic.sh` file into your project (not recommended)
+- Copy `critic.sh` file into your project (not recommended)
 
 ## Usage
 
