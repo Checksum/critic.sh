@@ -28,7 +28,7 @@ done
 if [ "${#testFiles[@]}" -eq 0 ]; then
   echo "No tests to run"
 else
-  if [ -n "$CRITIC_SETUP" ]; then
+  if [ -n "${CRITIC_SETUP:-}" ]; then
     eval "$CRITIC_SETUP"
   fi
   for file in "${testFiles[@]}"; do
