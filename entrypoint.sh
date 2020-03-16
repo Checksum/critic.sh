@@ -8,6 +8,7 @@ if [ $# -eq 0 ]; then
 fi
 
 skipFile() {
+  local file
   for file in entrypoint.sh critic.sh; do
     if cmp -s "/home/$file" "$1"; then
       return 0
@@ -31,6 +32,6 @@ else
     eval "$CRITIC_SETUP"
   fi
   for file in "${testFiles[@]}"; do
-    ./critic.sh "$file"
+    /home/critic.sh "$file"
   done
 fi
