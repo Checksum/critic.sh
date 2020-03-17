@@ -33,7 +33,7 @@ fi
 # Options
 CRITIC_COVERAGE_DISABLE="${CRITIC_COVERAGE_DISABLE:-}"
 CRITIC_COVERAGE_MIN_PERCENT="${CRITIC_COVERAGE_MIN_PERCENT:-0}"
-CRITIC_TRACE_FILE="/tmp/.critic-trace-$(date +%s).log"
+CRITIC_TRACE_FILE="$(pwd)/.critic-trace-$(date +%s).log"
 CRITIC_COVERAGE_REPORT_CLI="${CRITIC_COVERAGE_REPORT_CLI:-true}"
 CRITIC_COVERAGE_REPORT_LCOV="${CRITIC_COVERAGE_REPORT_LCOV:-true}"
 CRITIC_COVERAGE_REPORT_HTML="${CRITIC_COVERAGE_REPORT_HTML:-false}"
@@ -380,6 +380,7 @@ _cli_report() {
     # Debug info
     if [ -n "${CRITIC_DEBUG:-}" ]; then
         echo -e "\n  Debug info\n"
+        echo "    Trace file: ${CRITIC_TRACE_FILE}"
         echo "    # lines in file: ${#total_lines[@]}"
         echo "    # lines of code: ${num_total_loc}"
         echo "    Empty lines: ${empty_lines[*]}"
