@@ -1,5 +1,6 @@
 {
     "shellcheck.customArgs": [
-        "-x"
+        "-x",
+        "-s bash"
     ]
 }
