@@ -319,8 +319,8 @@ _collect_coverage() {
         uncovered_lines=($(printf "%s\n" "${uncovered_lines[@]}" | sort -uV))
         uncovered_lines=($(_uniq_array "${uncovered_lines[@]}" "${covered_lines[@]}"))
         if [ ${#lines_to_cover[@]} -gt 0 ]; then
-            num_coverage_percent="$((${#covered_lines[@]} * 100 / "${#lines_to_cover[@]}"))"
-            num_coverage_percent="$(("$num_coverage_percent" > 100 ? 100 : "$num_coverage_percent"))"
+            num_coverage_percent="$((${#covered_lines[@]} * 100 / ${#lines_to_cover[@]}))"
+            num_coverage_percent="$(($num_coverage_percent > 100 ? 100 : $num_coverage_percent))"
         else
             num_coverage_percent=100
         fi
