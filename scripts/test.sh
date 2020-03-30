@@ -46,10 +46,12 @@ Covered LOC: 3
 Coverage %: 50
 Ignored LOC: 5
 Uncovered Lines: 21 22 30
+[critic] Tests completed. Passed: 7, Failed: 1
 EOF
 )"
+
 if ! diff -bBEi \
-    <(sed -n -e '/\[critic\] Coverage Report/,$p' <<< "$output" | _trimColors | _trimOutput | tail -n +2 | head -n -1) \
+    <(sed -n -e '/\[critic\] Coverage Report/,$p' <<< "$output" | _trimColors | _trimOutput | tail -n +2) \
     <(echo "$expectedCoverage"); then
     exitCode=1
 else
