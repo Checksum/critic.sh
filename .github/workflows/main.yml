@@ -13,6 +13,12 @@ jobs:
       - name: Run Shellcheck
         uses: ludeeus/action-shellcheck@0.1.0
 
+      - name: Debian 10 (buster)
+        uses: docker://debian:buster-slim
+        with:
+          entrypoint: /bin/bash
+          args: scripts/test.sh
+
       - name: Run Unit Tests
         run: scripts/test.sh
         shell: bash
