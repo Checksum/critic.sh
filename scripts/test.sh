@@ -36,7 +36,7 @@ _runTest() {
 exitCode=0
 export CRITIC_COVERAGE_REPORT_HTML=false
 
-echo "--- Coverage report"
+echo -e "\n--- Coverage report"
 _runTest "examples/test.sh" 1
 
 expectedCoverage="$(cat <<EOF
@@ -58,7 +58,7 @@ else
     echo "Coverage report matches"
 fi
 
-echo "--- _output_contains"
+echo -e "\n--- _output_contains"
 expectedOutput="$(cat <<EOF
 readme
 Should print readme
