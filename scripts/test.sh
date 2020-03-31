@@ -88,7 +88,7 @@ PASS ✔ : Nth argument 1 equals 'second\ arg'
 
 [critic] Coverage Report
 
-/Users/srinath.sankar/projects/critic.sh/examples/lib.sh
+$(pwd)/examples/lib.sh
 Total LOC: 19
 Covered LOC: 2
 Coverage %: 33
@@ -124,7 +124,7 @@ PASS ✔ : Two should be equal to two
 
 [critic] Coverage Report
 
-/Users/srinath.sankar/projects/critic.sh/examples/lib.sh
+$(pwd)/examples/lib.sh
 Total LOC: 19
 Covered LOC: 1
 Coverage %: 16
