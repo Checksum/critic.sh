@@ -31,9 +31,9 @@ if [[ "${BASH_VERSION:0:1}" -lt 4 || ("${BASH_VERSION:0:1}" -eq 4 && "${BASH_VER
 fi
 
 # Options
+CRITIC_TRACE_FILE="$(pwd)/.critic-trace-$(date +%s).log"
 CRITIC_COVERAGE_DISABLE="${CRITIC_COVERAGE_DISABLE:-}"
 CRITIC_COVERAGE_MIN_PERCENT="${CRITIC_COVERAGE_MIN_PERCENT:-0}"
-CRITIC_TRACE_FILE="$(pwd)/.critic-trace-$(date +%s).log"
 CRITIC_COVERAGE_REPORT_CLI="${CRITIC_COVERAGE_REPORT_CLI:-true}"
 CRITIC_COVERAGE_REPORT_LCOV="${CRITIC_COVERAGE_REPORT_LCOV:-true}"
 CRITIC_COVERAGE_REPORT_HTML="${CRITIC_COVERAGE_REPORT_HTML:-false}"
@@ -50,7 +50,7 @@ CYAN='\033[0;36m'
 
 # Variables exported to the tests
 export _test_suite=''
-export _args=
+export _args=()
 export _output=''
 export _return=0
 
@@ -65,14 +65,34 @@ FAIL_COUNT=0
 _run() {
     local file="${1:-$(basename "$0")}"
     echo -e "${MAGENTA}[critic] Running tests in ${file}${DEFAULT}"
+    # shellcheck disable=1090
+    source "$file"
 }
 
 _describe() {
-    _test_suite="${1:?'Test suite name expected as parameter 1'}"
-    echo -e "\n${YELLOW}$1${DEFAULT}"
+    if [ -z "${_only_test_suite:-}" ]; then
+        _test_suite="${1:?'Test suite name expected as parameter 1'}"
+        echo -e "\n${YELLOW}$1${DEFAULT}"
+        _skip_tests=""
+    else
+        _skip_tests=true
+    fi
+}
+
+_describe_only() {
+    _only_test_suite=""
+    _describe "$@"
+    _only_test_suite="$_test_suite"
 }
 
 _test() {
+    if [[ -n "${_skip_tests:-}" || (-n "${_only_test:-}" && "${_only_test}" != "$(slugify "$_test_suite" "$@")") ]]; then
+        _skip_tests=true
+        return
+    else
+        _skip_tests=""
+    fi
+
     local name="${1:?'Test name expected as parameter 1'}"; shift
     local fn_or_expr="${1:-}"; [ $# -gt 0 ] && shift
 
@@ -105,7 +125,14 @@ _test() {
     set -e
 }
 
+_test_only() {
+    _only_test="$(slugify "$_test_suite" "$@")"
+    _test "$@"
+}
+
 _assert() {
+    [ -n "${_skip_tests:-}" ] && return
+
     local fn_or_expr="${1:?'Assertion function or expression expected as parameter 1'}"; shift
     # shellcheck disable=2155
     local msg="$(_generate_assertion_msg "$fn_or_expr" "$@")"
@@ -210,6 +237,11 @@ _uniq_array() {
 
 join_by() {
     local d=$1; shift; echo -n "$1"; shift; printf "%s" "${@/#/$d}";
+}
+
+# https://gist.github.com/oneohthree/f528c7ae1e701ad990e6#gistcomment-2602836
+slugify() {
+    echo "$*" | iconv -t ascii//TRANSLIT | sed -E 's/[~\^]+//g' | sed -E 's/[^a-zA-Z0-9]+/-/g' | sed -E 's/^-+\|-+$//g' | tr A-Z a-z
 }
 
 _collect_coverage() {
@@ -461,7 +493,5 @@ if [ $sourced -eq 0 ]; then
         exit 0
     fi
 
-    _run "${TEST_FILE}"
-    # shellcheck disable=1090
-    source "$1"
+    _run "$1"
 fi

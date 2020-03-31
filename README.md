@@ -82,15 +82,19 @@ The layout of a test is consistent with other frameworks. You `_describe` a test
 
 ### Test suite
 
-| Function   | Description                                        | Arguments                                         |
-| ---------- | -------------------------------------------------- | ------------------------------------------------- |
-| \_describe | Declare a test suite                               | 1. Suite/Function name (\*)                       |
-| \_test     | Run a test                                         | 1. Test name (\*)                                 |
-|            |                                                    | 2. Test function/expression                       |
-|            |                                                    | 3. Arguments to forward to the test function      |
-| \_assert   | Run an assertion                                   | 1. Assertion function/expression (\*)             |
-|            |                                                    | 2. Arguments to forward to the assertion function |
-| \_teardown | Teardown function run after all tests have ben run |
+| Function        | Description                                        | Arguments                                         |
+| --------------- | -------------------------------------------------- | ------------------------------------------------- |
+| \_describe      | Run test suite                                     | 1. Suite/Function name (\*)                       |
+| \_describe_only | Run only this test suite                           | 1. Suite/Function name (\*)                       |
+| \_test          | Run a test                                         | 1. Test name (\*)                                 |
+|                 |                                                    | 2. Test function/expression                       |
+|                 |                                                    | 3. Arguments to forward to the test function      |
+| \_test_only     | Run only this test                                 | 1. Test name (\*)                                 |
+|                 |                                                    | 2. Test function/expression                       |
+|                 |                                                    | 3. Arguments to forward to the test function      |
+| \_assert        | Run an assertion                                   | 1. Assertion function/expression (\*)             |
+|                 |                                                    | 2. Arguments to forward to the assertion function |
+| \_teardown      | Teardown function run after all tests have ben run |
 
 ### Assertions
 

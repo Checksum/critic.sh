@@ -36,7 +36,7 @@ _runTest() {
 exitCode=0
 export CRITIC_COVERAGE_REPORT_HTML=false
 
-echo "--- Coverage report"
+echo -e "\n--- Coverage report"
 _runTest "examples/test.sh" 1
 
 expectedCoverage="$(cat <<EOF
@@ -58,7 +58,7 @@ else
     echo "Coverage report matches"
 fi
 
-echo "--- _output_contains"
+echo -e "\n--- _output_contains"
 expectedOutput="$(cat <<EOF
 readme
 Should print readme
@@ -73,5 +73,75 @@ if ! diff -bBEi \
 else
     echo "Output matches"
 fi
+
+echo -e "\n--- _describe_only"
+_runTest "scripts/fixtures/describe-only.sh" 0
+expectedOutput="$(cat <<EOF
+foo
+Should print foo
+PASS ✔ : Output equals 'foo'
+
+echo_first
+Should get the correct number of args
+PASS ✔ : First argument equals 0
+PASS ✔ : Nth argument 1 equals 'second\ arg'
+
+[critic] Coverage Report
+
+$(pwd)/examples/lib.sh
+Total LOC: 19
+Covered LOC: 2
+Coverage %: 33
+Ignored LOC: 5
+Uncovered Lines: 10 21 22 30
+
+[critic] Tests completed. Passed: 3, Failed: 0
+EOF
+)"
+
+if ! diff -bBEi \
+    <(echo "$output" | _trimColors | _trimOutput) \
+    <(echo "$expectedOutput"); then
+    exitCode=1
+else
+    echo "Output matches"
+fi
+
+
+echo -e "\n--- _test_only"
+_runTest "scripts/fixtures/test-only.sh" 0
+expectedOutput="$(cat <<EOF
+foo
+Should print foo
+PASS ✔ : Output equals 'foo'
+
+echo_first
+
+custom expression
+Should test custom expression
+PASS ✔ : [ 1 -eq 1 ]
+PASS ✔ : Two should be equal to two
+
+[critic] Coverage Report
+
+$(pwd)/examples/lib.sh
+Total LOC: 19
+Covered LOC: 1
+Coverage %: 16
+Ignored LOC: 5
+Uncovered Lines: 10 21 22 26 30
+
+[critic] Tests completed. Passed: 3, Failed: 0
+EOF
+)"
+
+if ! diff -bBEi \
+    <(echo "$output" | _trimColors | _trimOutput) \
+    <(echo "$expectedOutput"); then
+    exitCode=1
+else
+    echo "Output matches"
+fi
+
 
 exit $exitCode
