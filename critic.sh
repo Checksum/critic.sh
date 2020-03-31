@@ -208,7 +208,7 @@ _log_output() {
       --------
       Exit Code: ${2:-$_return}
       Output: ${3:-$_output}
-      Arguments(${#_args[@]}): $(for a in "${_args[@]}"; do echo -n "$a, "; done)
+      Arguments(${#_args[@]}): $(for a in ${_args[@]+"${_args[@]}"}; do echo -n "$a, "; done)
       --------
 
 OUTPUT
@@ -331,7 +331,7 @@ _collect_coverage() {
         # expressions if the first line with the heredoc declaration is covered
         # heredocs = (lineno<<start, lineno<<start)
         heredocs=($(awk '/<<.+/ && !/<<</ {print NR $2}' "$file"))
-        for heredoc in "${heredocs[@]}"; do
+        for heredoc in ${heredocs[@]+"${heredocs[@]}"}; do
             IFS=$' ' read -r startline marker <<< "${heredoc/\<\</ }"
             # If thee startline is already covered, add the entire heredoc definition
             for c in "${covered_lines[@]}"; do
@@ -351,8 +351,8 @@ _collect_coverage() {
         uncovered_lines=($(printf "%s\n" "${uncovered_lines[@]}" | sort -uV))
         uncovered_lines=($(_uniq_array "${uncovered_lines[@]}" "${covered_lines[@]}"))
         if [ ${#lines_to_cover[@]} -gt 0 ]; then
-            num_coverage_percent="$((${#covered_lines[@]} * 100 / "${#lines_to_cover[@]}"))"
-            num_coverage_percent="$(("$num_coverage_percent" > 100 ? 100 : "$num_coverage_percent"))"
+            num_coverage_percent="$((${#covered_lines[@]} * 100 / ${#lines_to_cover[@]}))"
+            num_coverage_percent="$(($num_coverage_percent > 100 ? 100 : $num_coverage_percent))"
         else
             num_coverage_percent=100
         fi
