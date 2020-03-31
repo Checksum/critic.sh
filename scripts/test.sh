@@ -74,4 +74,74 @@ else
     echo "Output matches"
 fi
 
+echo -e "\n--- _describe_only"
+_runTest "scripts/fixtures/describe-only.sh" 0
+expectedOutput="$(cat <<EOF
+foo
+Should print foo
+PASS ✔ : Output equals 'foo'
+
+echo_first
+Should get the correct number of args
+PASS ✔ : First argument equals 0
+PASS ✔ : Nth argument 1 equals 'second\ arg'
+
+[critic] Coverage Report
+
+/Users/srinath.sankar/projects/critic.sh/examples/lib.sh
+Total LOC: 19
+Covered LOC: 2
+Coverage %: 33
+Ignored LOC: 5
+Uncovered Lines: 10 21 22 30
+
+[critic] Tests completed. Passed: 3, Failed: 0
+EOF
+)"
+
+if ! diff -bBEi \
+    <(echo "$output" | _trimColors | _trimOutput) \
+    <(echo "$expectedOutput"); then
+    exitCode=1
+else
+    echo "Output matches"
+fi
+
+
+echo -e "\n--- _test_only"
+_runTest "scripts/fixtures/test-only.sh" 0
+expectedOutput="$(cat <<EOF
+foo
+Should print foo
+PASS ✔ : Output equals 'foo'
+
+echo_first
+
+custom expression
+Should test custom expression
+PASS ✔ : [ 1 -eq 1 ]
+PASS ✔ : Two should be equal to two
+
+[critic] Coverage Report
+
+/Users/srinath.sankar/projects/critic.sh/examples/lib.sh
+Total LOC: 19
+Covered LOC: 1
+Coverage %: 16
+Ignored LOC: 5
+Uncovered Lines: 10 21 22 26 30
+
+[critic] Tests completed. Passed: 3, Failed: 0
+EOF
+)"
+
+if ! diff -bBEi \
+    <(echo "$output" | _trimColors | _trimOutput) \
+    <(echo "$expectedOutput"); then
+    exitCode=1
+else
+    echo "Output matches"
+fi
+
+
 exit $exitCode
