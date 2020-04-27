@@ -8,6 +8,8 @@ Dead simple testing framework for Bash with coverage.
 
 [![asciicast](https://asciinema.org/a/301445.svg)](https://asciinema.org/a/301445)
 
+![[git-cloc](https://git-cloc.fly.dev/cloc/checksum/critic.sh/svg)](https://git-cloc.fly.dev/cloc/checksum/critic.sh)
+
 ## Why?
 
 I was looking for a Bash testing framework with a familiar API and with coverage reporting. Although there are excellent frameworks like [bats-core](https://github.com/bats-core/bats-core), [shunit2](https://github.com/kward/shunit2) and [bashunit](https://github.com/djui/bashunit), I wasn't too comfortable with their API (not their fault). Also, I wanted some indication of coverage, so that it can be improved over time.
