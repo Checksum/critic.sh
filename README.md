@@ -8,7 +8,7 @@ Dead simple testing framework for Bash with coverage.
 
 [![asciicast](https://asciinema.org/a/301445.svg)](https://asciinema.org/a/301445)
 
-[![git-cloc](https://git-cloc.fly.dev/cloc/checksum/critic.sh/svg?v=1)](https://git-cloc.fly.dev/cloc/checksum/critic.sh)
+[![git-cloc](https://git-cloc.fly.dev/cloc/checksum/critic.sh/svg)](https://git-cloc.fly.dev/cloc/checksum/critic.sh)
 
 ## Why?
 
