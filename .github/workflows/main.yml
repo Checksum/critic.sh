@@ -23,7 +23,7 @@ jobs:
           - debian:buster-slim  # deb10 bash5.0
           - debian:stretch-slim # deb09 bash4.4
           - debian/eol:jessie  # deb08 bash4.3
-          - bash:4.2
+          # - bash:4.2
           #todo: 'bash:4.1',
           #tbd: 'bash:4.0', 'bash:3.2', 'bash:3.1', 'bash:3.0'
 
