@@ -241,7 +241,7 @@ join_by() {
 
 # https://gist.github.com/oneohthree/f528c7ae1e701ad990e6#gistcomment-2602836
 slugify() {
-    echo "$*" | iconv -t ascii//TRANSLIT | sed -E 's/[~\^]+//g' | sed -E 's/[^a-zA-Z0-9]+/-/g' | sed -E 's/^-+\|-+$//g' | tr A-Z a-z
+    echo "$*" | sed -E 's/[~\^]+//g' | sed -E 's/[^a-zA-Z0-9]+/-/g' | sed -E 's/^-+\|-+$//g' | tr A-Z a-z
 }
 
 _collect_coverage() {
