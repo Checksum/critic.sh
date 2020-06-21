@@ -3,17 +3,20 @@
 source examples/lib.sh
 source critic.sh
 
-_describe_only foo
+_describe foo
     # Since no function/expression is passed to _test,
     # it defaults to the test suite name (foo). So, the function
     # foo is invoked for each test
+    _test_skip "Should print foobar"
+        _assert "echo foobar" foobar
+
     _test "Should print foo"
         _assert _output_equals foo
 
-_describe_only echo_first
+_describe echo_first
     # If you want to pass arguments to the test function,
     # the function name has to be explicitly specified
-    _test "Should get the correct number of args" echo_first "first arg" "second\\ arg"
+    _test_skip "Should get the correct number of args" echo_first "first arg" "second\\ arg"
         _assert _nth_arg_equals 0 "first arg" "First argument equals 0"
         _assert _nth_arg_equals 1 "second\\ arg"
 

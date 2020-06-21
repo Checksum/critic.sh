@@ -7,10 +7,10 @@ _describe foo
     # Since no function/expression is passed to _test,
     # it defaults to the test suite name (foo). So, the function
     # foo is invoked for each test
-    _test_only "Should print foo"
+    _test "Should print foo"
         _assert _output_equals foo
 
-_describe echo_first
+_describe_skip echo_first
     # If you want to pass arguments to the test function,
     # the function name has to be explicitly specified
     _test "Should get the correct number of args" echo_first "first arg" "second\\ arg"
@@ -20,6 +20,6 @@ _describe echo_first
 _describe "custom expression"
     # The true expression means don't do anything
     # You can pass any bash expression there!
-    _test_only "Should test custom expression" true
+    _test "Should test custom expression" true
         _assert "[ 1 -eq 1 ]"
         _assert "[ 2 -eq 2 ]" "Two should be equal to two"

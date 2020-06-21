@@ -25,7 +25,9 @@ set -euo pipefail
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-if [[ "${BASH_VERSION:0:1}" -lt 4 || ("${BASH_VERSION:0:1}" -eq 4 && "${BASH_VERSION:2:1}" -lt 1) ]]; then
+if [[ "${BASH_VERSION:0:1}" -lt 4 || \
+    ("${BASH_VERSION:0:1}" -eq 4 && "${BASH_VERSION:2:1}" -lt 1) \
+]]; then
     echo "critic.sh needs bash version >= 4.1"
     exit 99
 fi
@@ -70,41 +72,41 @@ _run() {
 }
 
 _describe() {
-    if [ -z "${_only_test_suite:-}" ]; then
-        _test_suite="${1:?'Test suite name expected as parameter 1'}"
-        echo -e "\n${YELLOW}$1${DEFAULT}"
-        _skip_tests=""
-    else
-        _skip_tests=true
-    fi
+    _test_suite="${1:?'Test suite name expected as parameter 1'}"
+    _skip_tests=false
+    echo -e "\n${YELLOW}${1}${DEFAULT}"
 }
 
-_describe_only() {
-    _only_test_suite=""
-    _describe "$@"
-    _only_test_suite="$_test_suite"
+_describe_skip() {
+    _test_suite="${1:?'Test suite name expected as parameter 1'}"
+    _skip_tests=suite
+    echo -e "\n${YELLOW}${1} (skip)${DEFAULT}"
 }
 
 _test() {
-    if [[ -n "${_skip_tests:-}" || (-n "${_only_test:-}" && "${_only_test}" != "$(slugify "$_test_suite" "$@")") ]]; then
-        _skip_tests=true
-        return
-    else
-        _skip_tests=""
-    fi
-
+    local test_id="$(slugify "$_test_suite" "$@")"
     local name="${1:?'Test name expected as parameter 1'}"; shift
     local fn_or_expr="${1:-}"; [ $# -gt 0 ] && shift
+
+    # Determine if tests have to be run
+    if [[ "$_skip_tests" == suite || ("$_skip_tests" == true && "${_test_id:-}" == "$test_id") ]]; then
+        echo -e "  ${BLUE}${name} (skip)${DEFAULT}"
+        return
+    else
+        _test_id="$test_id"
+        _skip_tests=false
+        echo -e "  ${BLUE}${name}${DEFAULT}"
+    fi
 
     # If fn is not passed and _test_suite is a valid function, default to that
     if [ -z "$fn_or_expr" ]; then
         if declare -f "$_test_suite" &> /dev/null; then
             fn_or_expr="$_test_suite"
         else
-            : "${function_undefined:?'Test Function or expression expected as parameter 2'}"
+            echo 'Test Function or expression expected as parameter 2' >&2
+            exit 2
         fi
     fi
-    echo -e "  ${BLUE}${name}${DEFAULT}"
 
     # If expression, unset all positional parameters
     if ! declare -f "$fn_or_expr" &> /dev/null; then
@@ -125,13 +127,14 @@ _test() {
     set -e
 }
 
-_test_only() {
-    _only_test="$(slugify "$_test_suite" "$@")"
+_test_skip() {
+    _test_id="$(slugify "$_test_suite" "$@")"
+    _skip_tests=true
     _test "$@"
 }
 
 _assert() {
-    [ -n "${_skip_tests:-}" ] && return
+    [ "${_skip_tests}" != false ] && return
 
     local fn_or_expr="${1:?'Assertion function or expression expected as parameter 1'}"; shift
     # shellcheck disable=2155
