@@ -329,10 +329,10 @@ _collect_coverage() {
     # For every source file, automatically add lines to coverage for heredoc
     # expressions if the first line with the heredoc declaration is covered
     # heredocs = (lineno<<start, lineno<<start)
-    heredocs=($(awk '/<<.+/ && !/<<</ {print NR $2}' "$file"))
+    heredocs=($(awk '{ for(i=1;i<=NF;i++) if($i ~ /^<</ && $i != "<<<") print NR $i }' "$file"))
     for heredoc in ${heredocs[@]+"${heredocs[@]}"}; do
       IFS=$' ' read -r startline marker <<< "${heredoc/\<\</ }"
-      # If thee startline is already covered, add the entire heredoc definition
+      # If the startline is already covered, add the entire heredoc definition
       for c in "${covered_lines[@]}"; do
         if [ "$c" -eq "$startline" ]; then
           while read -r lineno; do
